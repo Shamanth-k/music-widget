@@ -1,6 +1,5 @@
 appId: com.musicwidget.desktop
 productName: Music Widget
-publish: never
 directories:
   output: release
 files:
