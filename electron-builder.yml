@@ -1,0 +1,34 @@
+appId: com.musicwidget.desktop
+productName: Music Widget
+electronDist: node_modules/electron/dist
+directories:
+  output: release
+files:
+  - dist/**
+  - dist-electron/**
+  - package.json
+  - electron/preload.cjs
+extraResources:
+  - from: electron/native/MediaBridge/bin/Release/net8.0-windows10.0.26100.0/win-x64/publish
+    to: media-bridge
+    filter:
+      - MediaBridge.exe
+      - MediaBridge.dll
+      - MediaBridge.runtimeconfig.json
+      - MediaBridge.deps.json
+win:
+  icon: build/icon.ico
+  signExecutable: false
+  target:
+    - target: nsis
+      arch: [x64]
+    - target: portable
+      arch: [x64]
+nsis:
+  artifactName: MusicWidget-Setup.${ext}
+  oneClick: true
+  perMachine: false
+  allowToChangeInstallationDirectory: false
+  createDesktopShortcut: true
+portable:
+  artifactName: MusicWidget-Portable.${ext}

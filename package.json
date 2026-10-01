@@ -1,0 +1,49 @@
+{
+  "name": "music-widget",
+  "description": "A lightweight Windows floating music widget.",
+  "author": {
+    "name": "Shamanth Krishna V R"
+  },
+  "private": true,
+  "version": "1.0.0",
+  "main": "dist-electron/main.js",
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently -k \"vite\" \"tsc -p electron/tsconfig.json --watch\" \"wait-on http://localhost:5173 && wait-on dist-electron/main.js && node electron/dev-launch.cjs\"",
+    "build": "tsc -b && vite build",
+    "build:electron": "tsc -p electron/tsconfig.json",
+    "build:bridge": "dotnet publish electron/native/MediaBridge/MediaBridge.csproj -c Release -r win-x64 --self-contained true",
+    "package:win": "npm run build && npm run build:electron && npm run build:bridge && electron-builder --win",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "test": "npm run build:electron && node --experimental-strip-types --test tests/*.test.mjs"
+  },
+  "dependencies": {
+    "electron-store": "^11.0.2",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.29.7",
+    "@eslint/js": "^10.0.1",
+    "@rolldown/plugin-babel": "^0.2.3",
+    "@types/babel__core": "^7.20.5",
+    "@types/node": "^24.13.3",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.7",
+    "@vitejs/plugin-react": "^6.1.1",
+    "babel-plugin-react-compiler": "^1.0.0",
+    "concurrently": "^10.0.5",
+    "cross-env": "^10.1.0",
+    "electron": "^44.5.1",
+    "electron-builder": "^26.15.3",
+    "eslint": "^10.10.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.6",
+    "globals": "^17.12.0",
+    "typescript": "~6.0.2",
+    "typescript-eslint": "^8.69.0",
+    "vite": "^8.3.0",
+    "wait-on": "^9.5.1"
+  }
+}
