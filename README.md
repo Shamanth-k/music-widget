@@ -1,59 +1,398 @@
 # Music Widget
 
-Music Widget is a lightweight Windows desktop companion that displays the current music session in a floating, draggable player. It reads Windows Global System Media Transport Controls (GSMTC), so no Spotify API key, Premium subscription, server, or account integration is needed.
+A lightweight Windows floating music widget that automatically appears
+when music is playing.
+
+Music Widget uses Windows' built-in media session system to detect
+supported music applications and display the currently playing track
+without accessing or recording the audio itself.
+
+![Music Widget](build/music-widget-icon.png)
 
 ## Features
 
-- Artwork, title, artist, album, progress, and playback state
-- Previous, play/pause, and next controls when supported by the current session
-- Artwork derived dark colors, missing-art fallback, and smooth local progress interpolation
-- Frameless, transparent, always-on-top window with position persistence
-- Closing the widget hides it; the tray keeps the app running
-- Tray actions for showing, hiding, settings, and quitting
-- Persistent startup, visibility, playback-control, theme, and window settings
-- Windows native GSMTC helper managed as an Electron child process
+-   Automatically detects supported music sessions
+-   Shows album artwork
+-   Displays song title and artist
+-   Playback progress and timeline
+-   Play / Pause controls
+-   Previous / Next track controls
+-   Automatically appears when music starts
+-   Automatically hides when no music session is active
+-   Paused music remains visible
+-   Close button hides the widget without stopping playback
+-   Always-on-top floating window
+-   Draggable widget
+-   Remembers widget position
+-   System tray support
+-   Dynamic background based on album artwork
+-   Runs in the background
+-   No Spotify API
+-   No Spotify OAuth
+-   No premium account requirement
+-   No audio recording or raw audio capture
 
-## Supported Windows versions
+## Download
 
-Windows 10 version 1809 or later and Windows 11. Applications need to publish a Windows media session for metadata and controls to be available. Video and unknown media types are ignored; classification relies on the session's GSMTC playback type metadata.
+Download the latest Windows release from the project's Releases page.
 
-## Installation and portable version
+### Windows Installer
 
-Download `MusicWidget-Setup.exe` for the one-click installer or `MusicWidget-Portable.exe` to run without installing. The first release build may be unsigned, in which case Windows SmartScreen can show a reputation warning.
+**MusicWidget-Setup.exe**
+
+Recommended for most users.
+
+The installer creates the application and desktop shortcut
+automatically.
+
+### Portable Version
+
+**MusicWidget-Portable.exe**
+
+Run the application without installing it.
+
+## How It Works
+
+Music Widget uses the Windows Global System Media Transport Controls
+(GSMTC) system.
+
+``` text
+Music Application
+       │
+       ▼
+Windows Media Session
+       │
+       ▼
+C# MediaBridge
+       │
+       ▼
+Electron Main Process
+       │
+       ▼
+Secure IPC / Preload
+       │
+       ▼
+React UI
+```
+
+The application reads media metadata provided by Windows, such as:
+
+-   Song title
+-   Artist
+-   Album
+-   Album artwork
+-   Playback state
+-   Playback position
+-   Track duration
+
+Playback commands are also sent through Windows' media session controls.
+
+Music Widget does **not** capture the audio stream.
+
+## Supported Media
+
+Music Widget works with applications that expose their playback
+information through Windows Media Session / GSMTC.
+
+This can include:
+
+-   Spotify
+-   Windows-supported music players
+-   Other applications that expose Windows media controls
+
+Support depends on whether the application provides media metadata
+through Windows.
+
+Video sessions are intentionally ignored so that watching videos does
+not unnecessarily open the widget.
+
+## Requirements
+
+-   Windows 10 or later
+-   64-bit Windows
+-   An application that exposes Windows media session information
+
+No separate runtime installation is required for the packaged
+application.
+
+## Installation
+
+1.  Download `MusicWidget-Setup.exe` from the latest release.
+2.  Run the installer.
+3.  Launch **Music Widget**.
+4.  Start playing music in a supported application.
+5.  The widget will automatically appear.
+
+The application can continue running in the system tray even when the
+widget itself is hidden.
+
+## System Tray
+
+When the widget is running, it can be controlled from the Windows system
+tray.
+
+Available actions include:
+
+-   Show
+-   Hide
+-   Settings
+-   Quit
+
+Closing the widget does not stop the music.
+
+## Settings
+
+The application provides settings for:
+
+-   Start with Windows
+-   Always on top
+-   Remember widget position
+-   Show when music starts
+-   Hide delay
+-   Playback controls
+-   Theme intensity
+
+## Technology
+
+### Frontend
+
+-   React
+-   TypeScript
+-   Vite
+-   CSS
+
+### Desktop
+
+-   Electron
+-   Electron Store
+
+### Windows Media Integration
+
+-   C#
+-   .NET 8
+-   Windows Global System Media Transport Controls (GSMTC)
+
+### Packaging
+
+-   electron-builder
+-   NSIS
+-   Portable Windows build
+
+### CI/CD
+
+-   GitHub Actions
+-   GitHub Releases
+
+## Project Structure
+
+``` text
+music-widget/
+│
+├── .github/
+│   └── workflows/
+│       └── release.yml
+│
+├── build/
+│   ├── icon.ico
+│   └── music-widget-icon.png
+│
+├── electron/
+│   ├── main.ts
+│   ├── mediaBridge.ts
+│   ├── mediaModel.ts
+│   ├── preload.cjs
+│   │
+│   └── native/
+│       └── MediaBridge/
+│           ├── MediaBridge.csproj
+│           ├── MediaSessionManager.cs
+│           └── Program.cs
+│
+├── public/
+├── src/
+├── tests/
+│
+├── electron-builder.yml
+├── package.json
+├── package-lock.json
+└── vite.config.ts
+```
 
 ## Development
 
-Requirements: Node.js 22+, npm, .NET 8 SDK, and Windows 10/11. Dependencies are already declared in `package-lock.json`.
+### Prerequisites
 
-```powershell
-npm ci
+Install:
+
+-   Node.js
+-   npm
+-   .NET 8 SDK
+
+### Clone the repository
+
+``` bash
+git clone https://github.com/Shamanth-k/music-widget.git
+cd music-widget
+```
+
+### Install dependencies
+
+``` bash
+npm install
+```
+
+### Run the application in development
+
+``` bash
 npm run dev
 ```
 
-Development mode starts Vite and Electron and displays mock metadata/artwork when there is no native session. Mock data is selected only in the renderer development build; production does not synthesize sessions. Use `npm run build` for the React production build, `npm run build:electron` for the Electron main process, `npm run test` for the shared model tests, and `npm run package:win` to publish the native helper and create both Windows artifacts.
+### Run tests
 
-## GitHub releases
+``` bash
+npm test
+```
 
-The GitHub Actions workflow builds on Windows for version tags. Push a tag such as `v1.0.0`; the workflow compiles the .NET helper and attaches the installer and portable executable to the GitHub Release. It requires repository Actions and Releases permissions and no paid service.
+### Build the frontend
+
+``` bash
+npm run build
+```
+
+### Build the Electron process
+
+``` bash
+npm run build:electron
+```
+
+### Build the Windows MediaBridge
+
+``` bash
+npm run build:bridge
+```
+
+### Build Windows releases
+
+``` bash
+npm run package:win
+```
+
+The generated files are placed in:
+
+``` text
+release/
+```
+
+## Release Pipeline
+
+Windows releases are automatically built using GitHub Actions.
+
+Creating a version tag such as:
+
+``` bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+triggers the release workflow.
+
+The workflow:
+
+1.  Sets up Windows
+2.  Installs Node.js
+3.  Installs .NET 8
+4.  Installs npm dependencies
+5.  Runs tests
+6.  Builds the React application
+7.  Builds the Electron process
+8.  Publishes the C# MediaBridge
+9.  Builds the Windows installer
+10. Builds the portable executable
+11. Publishes the executables to GitHub Releases
 
 ## Architecture
 
-The C# helper uses `GlobalSystemMediaTransportControlsSessionManager` and line-delimited JSON over stdin/stdout. It emits metadata, the media playback type, timeline and controls, and a data URL for artwork. Diagnostics go to stderr. Electron owns the child process, retries a failed helper a limited number of times, validates settings IPC, persists settings using electron-store, and exposes a narrow preload API. React does not access Node or Windows APIs.
-
-## Manual Windows test checklist
-
-- [ ] Spotify playing music; local MP3 player; paused and resumed playback
-- [ ] Change song and verify metadata/artwork and progress update
-- [ ] Close the music application; play and pause a video; check video does not show
-- [ ] Move the widget, close it, restart the app, and verify position restoration
-- [ ] Show/hide widget from tray; open settings; quit from tray
-- [ ] Multiple media sessions; no active session; missing album artwork
-- [ ] Test controls when each media app supports and does not support the action
-
-## Limitations and troubleshooting
-
-Only sessions provided by GSMTC can be read. The application cannot add support for a player that does not expose a Windows media session, and individual control capabilities depend on what that session advertises. If the widget stays hidden, check that a supported music application is playing and that the Windows media flyout shows its session. If the helper is unavailable, run `npm run build:bridge` from a Windows development environment with the .NET 8 SDK installed. Diagnostics from the helper are written to stderr.
+``` text
+┌─────────────────────────────┐
+│       Music Application     │
+│   Spotify / Music Player    │
+└──────────────┬──────────────┘
+               │
+               │ Windows Media Session
+               ▼
+┌─────────────────────────────┐
+│       C# MediaBridge        │
+│       .NET 8 + GSMTC        │
+└──────────────┬──────────────┘
+               │
+               │ JSON messages
+               ▼
+┌─────────────────────────────┐
+│      Electron Main          │
+│        Process              │
+└──────────────┬──────────────┘
+               │
+               │ Secure IPC
+               ▼
+┌─────────────────────────────┐
+│       React Renderer        │
+│                             │
+│  Album Art                  │
+│  Song Information           │
+│  Progress                   │
+│  Playback Controls          │
+└─────────────────────────────┘
+```
 
 ## Privacy
 
-Media metadata is read locally through Windows media sessions. The application has no cloud backend and does not upload song information. It does not capture raw system audio or use microphone-based recognition. No Spotify account is required. Artwork is received from the local media session and displayed in the widget.
+Music Widget does not:
+
+-   Record audio
+-   Capture microphone input
+-   Upload music
+-   Download music
+-   Use the Spotify Web API
+-   Require Spotify OAuth
+-   Store Spotify credentials
+-   Send song information to a remote backend
+
+The application communicates locally with Windows media sessions.
+
+## Limitations
+
+Music Widget depends on Windows Media Session support.
+
+If a music application does not expose its playback information through
+Windows, Music Widget may not be able to display its:
+
+-   Song title
+-   Artist
+-   Album artwork
+-   Playback state
+-   Timeline
+
+This is a limitation of the media application's Windows integration
+rather than the widget itself.
+
+## License
+
+This project is currently distributed without a published open-source
+license.
+
+See the repository for the current project status and release
+information.
+
+## Author
+
+**Shamanth Krishna V R**
+
+GitHub: `Shamanth-k`
+
+------------------------------------------------------------------------
+
+## Release
+
+**v1.0.0**
+
+Initial public release of Music Widget for Windows.
