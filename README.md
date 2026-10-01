@@ -7,8 +7,6 @@ Music Widget uses Windows' built-in media session system to detect
 supported music applications and display the currently playing track
 without accessing or recording the audio itself.
 
-![Music Widget](build/music-widget-icon.png)
-
 ## Features
 
 -   Automatically detects supported music sessions
